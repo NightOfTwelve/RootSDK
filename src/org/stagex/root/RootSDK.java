@@ -46,7 +46,7 @@ public class RootSDK {
 		int rc = root(ctx);
 		if (rc < 0)
 			return null;
-		for (int retry = 0; retry < timeout; retry++) {
+		for (int retry = 0; retry < timeout; retry += 100) {
 			service = getRootService();
 			if (service != null)
 				return service;
