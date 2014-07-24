@@ -1,6 +1,13 @@
 
+#ifndef _KALLSYMS_H_
+#define _KALLSYMS_H_
+
 #include <sys/types.h>
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct st_kallsyms {
     unsigned long base;
@@ -21,4 +28,10 @@ int kallsyms_init(kallsyms_t *, const void *, size_t);
 unsigned long kallsyms_lookup(kallsyms_t *, const char *);
 void kallsyms_foreach(kallsyms_t *, int (*)(void *, const char *, long *), void *);
 void kallsyms_free(kallsyms_t *);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
 

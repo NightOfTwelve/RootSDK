@@ -8,8 +8,8 @@
 #endif
 
 // XXX: when kernel introduced this?
-int seccomp_get(int *seccomp) {
-    return prctl(PR_GET_SECCOMP, 0, 0, 0);
+bool seccomp_get(int *seccomp) {
+    return prctl(PR_GET_SECCOMP, 0, 0, 0) > 0 ? true : false;
 }
 
 

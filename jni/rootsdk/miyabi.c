@@ -3,7 +3,7 @@
 #include "kconfig.h"
 #include <string.h>
 
-int miyabi_exists() {
+bool miyabi_exists() {
     int rc;
     char config_data[12];
     int config_size;
@@ -12,8 +12,8 @@ int miyabi_exists() {
     config_size = sizeof(config_data);
     rc = kconfig_get("CONFIG_SECURITY_MIYABI", config_data, &config_size);
     if (!rc && !strcmp(config_data, "y"))
-        rc = 1;
+        return true;
 
-    return rc;
+    return false;
 }
 

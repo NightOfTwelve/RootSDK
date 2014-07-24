@@ -2,6 +2,10 @@
 #ifndef _KCONFIG_H_
 #define _KCONFIG_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define CONFIG_CPU_ENDIAN_BE8 0x00000001
 #define CONFIG_AEABI          0x00000002
 #define CONFIG_ARM_THUMB      0x00000004
@@ -12,6 +16,10 @@
 #define CONFIG_KEYS           0x00000080
 
 int kconfig_get(const char *, char *, int *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

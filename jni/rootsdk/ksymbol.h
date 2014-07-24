@@ -5,6 +5,10 @@
 #include "exploit.h"
 #include "kconfig.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // internal error
 #define KSYMBOL_LOOKUP_500  -1
 // symbol not found
@@ -41,6 +45,10 @@ ksymbol_static_data_t *ksymbol_static_lookup(void);
 
 int kernel_paddr_get(long *, long *);
 int kernel_vaddr_get(long *, long *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

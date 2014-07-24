@@ -4,6 +4,10 @@
 
 #include "exploit.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct st_root_ctx {
     char my_name_old[16];
     char my_name_new[16];
@@ -21,6 +25,10 @@ void root_free(root_ctx *);
          and the user process will hang on (D) state at exit.
  */
 int root_321(root_ctx *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

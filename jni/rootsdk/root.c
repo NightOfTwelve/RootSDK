@@ -123,8 +123,7 @@ int root_init(root_ctx *ctx) {
     // CONFIG_SECCOMP
     rc = root_kconf_guess(&ctx->kconfig, "CONFIG_SECCOMP", 0, CONFIG_SECCOMP);
     if (rc < 0) {
-        rc = seccomp_get();
-        if (rc > 0)
+        if (seccomp_get())
             ctx->kconfig |= CONFIG_SECCOMP;
         else
             ctx->kconfig &= ~CONFIG_SECCOMP;
