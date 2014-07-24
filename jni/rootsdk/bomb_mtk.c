@@ -221,11 +221,6 @@ exploit_t EXPLOIT_mtk_camera_isp = {
 #define FLASHLIGHT_MAGIC 'S'
 #define FLASHLIGHTIOC_X_SET_DRIVER _IOWR(FLASHLIGHT_MAGIC,30,unsigned long)
 
-struct private_data_camera_fl {
-    int fd;
-    void *mapped;
-};
-
 // XXX: why mmap ANONYMOUS | FIXED | SHARED not working???
 // kernel is about server MB
 static long fl_fake_init[16 * 1024 * 1024 / sizeof(long)];
