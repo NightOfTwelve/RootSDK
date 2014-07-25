@@ -68,7 +68,7 @@ static int mtk_M4U_write32(void *opaque, long addr, long val) {
 }
 
 exploit_t EXPLOIT_mtk_M4U = {
-    .name = "MTK M4U",
+    .name = "MTK M4U_device",
     .flags = EXPLOIT_POKE_TEXT,
     .init = mtk_M4U_init,
     .free = mtk_M4U_free,
@@ -255,7 +255,7 @@ static void mtk_camera_fl_free(void **opaque) {
 }
 
 exploit_t EXPLOIT_mtk_camera_fl = {
-    .name = "MTK flashlight",
+    .name = "MTK kd_camera_flashlight",
     .init = mtk_camera_fl_init,
     .invoke = mtk_camera_fl_invoke,
     .free = mtk_camera_fl_free,
