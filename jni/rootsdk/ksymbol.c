@@ -495,7 +495,7 @@ int kernel_vaddr_get(long *addr, long *size) {
         *addr = strtol(config_data, NULL, 16);
     else {
         *addr = 0xc0000000;
-        LOGV("assume CONFIG_PAGE_OFFSET=%p!", (void *)(*addr));
+        //LOGV("assume CONFIG_PAGE_OFFSET=%p!", (void *)(*addr));
     }
     *size = 0x00200000;
     return 0;
